@@ -2,7 +2,7 @@
   "name": "houstonjs",
   "version": "0.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,6 +11,7 @@
   "devDependencies": {
     "gulp": "^3.7.0",
     "gulp-clean": "^0.3.0",
-    "gulp-watch": "^0.6.5"
+    "gulp-watch": "^0.6.5",
+    "connect": "^2.19.3"
   }
 }
