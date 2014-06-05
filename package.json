@@ -9,9 +9,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "connect": "^2.19.3",
     "gulp": "^3.7.0",
     "gulp-clean": "^0.3.0",
-    "gulp-watch": "^0.6.5",
-    "connect": "^2.19.3"
+    "gulp-concat": "^2.2.0",
+    "gulp-watch": "^0.6.5"
   }
 }
