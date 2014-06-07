@@ -3,6 +3,11 @@ var clean = require('gulp-clean');
 var watch = require('gulp-watch');
 var concat = require('gulp-concat');
 var markdown = require('gulp-markdown');
+var Handlebars = require('handlebars');
+var tap = require('gulp-tap');
+var Stream = require('stream');
+var gStreamify = require('gulp-streamify');
+var rename = require('gulp-rename');
 
 gulp.task('clean', function () {
   return gulp.src('build', {read: false}).pipe(clean());
@@ -14,27 +19,64 @@ gulp.task('css', function() {
     .pipe(gulp.dest('build/css'));
 });
 
-var map = require('map-stream');
+var Data = {
+  test: "Booyah?"
+};
 
-var myReporter = map(function (file, cb) {
-  console.log(file);
-  // if (!file.jshint.success) {
-  //   console.log('JSHINT fail in '+file.path);
-  //   file.jshint.results.forEach(function (err) {
-  //     if (err) {
-  //       console.log(' '+file.path + ': line ' + err.line + ', col ' + err.character + ', code ' + err.code + ', ' + err.reason);
-  //     }
-  //   });
-  // }
-  cb(null, file);
-});
+var buffer = require('buffer');
 
 gulp.task('news', function () {
-    return gulp.src('contents/news/**.md')
-        .pipe(markdown())
-        .pipe(myReporter);
-        // .pipe(gulp.dest('build/news'));
+  Data.News = [];
+  return gulp.src('contents/news/**.md')
+      .pipe(tap(function(file, t) {
+        var contents = file.contents.toString();
+        var index = contents.indexOf("---");
+        var json = contents.slice(0,index);
+        json = JSON.parse(json);
+        json.url = "/news/" + file.relative.replace(".md", ".html")
+        Data.News.push(json);
+
+        var str = contents.slice(index+3, contents.length);
+        file.contents = new Buffer(str, "utf-8");
+      }))
+      .pipe(gStreamify(markdown()))
+      .pipe(gulp.dest('tmp/news'));
 });
+
+gulp.task('index', ['news'], function() {
+  return gulp
+    .src(["contents/index.hbs"], { base: './contents' })
+    .pipe(tap(function(file) {
+      var template = Handlebars.compile(file.contents.toString())
+      var html = template(Data)
+      file.contents = new Buffer(html, "utf-8")
+    }))
+    .pipe(rename(function(path) {
+      path.extname = ".html"
+    }))
+    .pipe(gulp.dest('build'));
+});
+
+gulp.task('news-html', ['news'], function() {
+  return gulp.src(["contents/news.hbs"])
+    .pipe(tap(function(file) {
+      var template = Handlebars.compile(file.contents.toString())
+
+      gulp.src(["tmp/news/**.*"])
+        .pipe(tap(function(file) {
+          var data = {
+            contents: file.contents.toString()
+          }
+          var html = template(data)
+          file.contents = new Buffer(html, "utf-8")
+        }))
+        // .pipe(rename(function(path) {
+        //   path.extname = ".html"
+        // }))
+        .pipe(gulp.dest('build/news'));
+    }))
+});
+
 
 gulp.task('move', ['clean'], function(){
   return gulp.src(["contents/index.html"], { base: './contents' }).pipe(gulp.dest('build'));
