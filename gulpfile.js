@@ -11,6 +11,7 @@ var gStreamify = require('gulp-streamify');
 var rename = require('gulp-rename');
 var Path = require('path');
 var buffer = require('buffer');
+var _ = require('underscore');
 
 // Clean folders used by build
 gulp.task('clean', function () {
@@ -34,18 +35,31 @@ var Data = {
 gulp.task('read-news', function () {
   Data.news = [];
   return gulp.src('contents/news/**.md')
+      // Read markdown files and add data to Data.news
       .pipe(tap(function(file, t) {
         var contents = file.contents.toString();
         var index = contents.indexOf("---");
+
         var json = contents.slice(0,index);
         json = JSON.parse(json);
+        json.file = file.path.replace(".md", "")
         json.url = "/news/" + file.relative.replace(".md", ".html")
-        Data.news.push(json);
+        Data.news.push(json)
 
-        var str = contents.slice(index+3, contents.length);
-        file.contents = new Buffer(str, "utf-8");
+        // Remove the metadata from top
+        var str = contents.slice(index+3, contents.length)
+        file.contents = new Buffer(str, "utf-8")
       }))
-      .pipe(gStreamify(markdown()))
+      // Turn markdown into HTML
+      .pipe(markdown())
+      // Add contents to data after we process markdown into html
+      .pipe(tap(function(file, t) {
+        var news = _.find(Data.news, function(n) {
+          return n.file == file.path.replace(".html", "")
+        })
+        news.contents = file.contents.toString()
+      }))
+      // Move files to tmp folder
       .pipe(gulp.dest('tmp/news'));
 });
 

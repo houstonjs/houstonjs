@@ -3,15 +3,13 @@
   <link href="css/main.min.css" type="text/css" rel="stylesheet" />
 </head>
 <body>
-  <h1>Test!!!</h1>
-  {{ test }}
+  {{> header }}
 
-  <ul>
-    {{#each News}}
-      <li>
-        <a href="{{ url }}">{{ url }} - {{ title }}</a>
-      </li>
+  <div>
+    {{#each news}}
+      <h3>{{ title }}</h3>
+      {{{ contents }}}
     {{/each}}
-  </ul>
+  </div>
 </body>
 </html>
