@@ -1,15 +1,18 @@
 <html>
 <head>
-  <link href="css/main.min.css" type="text/css" rel="stylesheet" />
+  <title>HoustonJS</title>
+  <link href="assets/css/normalize.min.css" type="text/css" rel="stylesheet" />
+  <link href="assets/css/main.min.css" type="text/css" rel="stylesheet" />
 </head>
 <body>
-  {{> header }}
-
-  <div>
-    {{#each news}}
-      <h3>{{ title }}</h3>
-      {{{ contents }}}
-    {{/each}}
-  </div>
+  <article>
+    {{> header }}
+    <div>
+      {{#each news}}
+        <h3>{{ title }}</h3>
+        {{{ contents }}}
+      {{/each}}
+    </div>
+  </article>
 </body>
 </html>

@@ -11,7 +11,10 @@ var gStreamify = require('gulp-streamify');
 var rename = require('gulp-rename');
 var Path = require('path');
 var buffer = require('buffer');
+var runSequence = require('run-sequence');
 var _ = require('underscore');
+var livereload = require('gulp-livereload');
+var spawn = require('child_process').spawn;
 
 // Clean folders used by build
 gulp.task('clean', function () {
@@ -20,9 +23,15 @@ gulp.task('clean', function () {
 
 // Read all the css files from the css folder and concat into a main.css file
 gulp.task('css', ['clean'], function() {
-  return gulp.src(['css/**.*'])
+  return gulp.src(['assets/css/**.*'])
     .pipe(concat('main.min.css'))
-    .pipe(gulp.dest('build/css'));
+    .pipe(gulp.dest('build/assets/css'));
+});
+
+// copy assets over
+gulp.task('assets', function(){
+  return gulp.src(['assets/**/**.*', '!assets/css/**.*'])
+    .pipe(gulp.dest('build/assets'));
 });
 
 // This is the data context object used to provide data to the Handlebar templates
@@ -108,7 +117,34 @@ gulp.task('partials', ['clean'], function() {
 });
 
 gulp.task('watch', function() {
-  return gulp.watch(['contents/**/**.*', 'css/**.*'], ['default']);
+  return gulp.watch(['contents/**/**.*', 'assets/**/**.*'], ['default']);
 })
 
-gulp.task('default', ['clean', 'css', 'write-news', 'index']);
+gulp.task('default', ['clean', 'css', 'assets', 'write-news', 'index']);
+
+
+/**
+ * Because I'm a lazy ass panda.
+ * 
+ * Install livereload Chrome plugin to take full advantage
+ * https://chrome.google.com/webstore/detail/livereload/jnihajbhpnppcggbcgedagnkighmdlei?hl=en
+ */
+gulp.task('nodemon', function(callback) {
+  spawn('./node_modules/.bin/nodemon', ['--watch', 'server', '--debug', 'server.js'],{
+    stdio: 'inherit'
+  }).on('close', function() {
+    callback();
+  });
+});
+
+gulp.task('watch-develop', ['default'], function(){
+  var server = livereload();
+
+  gulp.watch('build/**/*.*').on('change', function(file) {
+    server.changed(file.path);
+  });
+
+  gulp.run('nodemon');
+
+  gulp.watch(['contents/**/**.*', 'assets/**/**.*'], ['default']);
+});
