@@ -100,6 +100,12 @@ gulp.task('index', ['clean', 'partials', 'read-news'], function() {
     .pipe(gulp.dest('build'));
 });
 
+// Move images
+gulp.task('move-images', ['clean'], function() {
+  return gulp.src('contents/images/**.*').pipe(gulp.dest('build/images'))
+})
+
+
 // Reads *.hbs files from contents/partials folder and registers them with Handlebars
 gulp.task('partials', ['clean'], function() {
   return gulp.src(["contents/partials/**.hbs"])
@@ -128,4 +134,4 @@ gulp.task('watch', function() {
   return gulp.watch(['contents/**/**.*', 'css/**.*'], ['default']);
 })
 
-gulp.task('default', ['clean', 'css', 'write-news', 'index', 'pages']);
+gulp.task('default', ['clean', 'css', 'write-news', 'index', 'pages', 'move-images']);
