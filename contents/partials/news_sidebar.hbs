@@ -1,0 +1,14 @@
+<!--Start popular Post -->
+<div class="widget-main">
+    <h4>Previous Posts</h4>
+    {{#each news}}
+      <div class="sidebar-widget clearfix">
+        <p class="sidebar-widget-title">
+          <a href="{{ url }}">{{ title }}</a>
+          <br />
+          <small class="date">{{ formatted_date }}</small>
+        </p>
+        
+      </div>
+    {{/each}}
+</div>

@@ -11,6 +11,7 @@ var gStreamify = require('gulp-streamify');
 var rename = require('gulp-rename');
 var Path = require('path');
 var buffer = require('buffer');
+var moment = require('moment')
 var _ = require('underscore');
 
 // Clean folders used by build
@@ -32,7 +33,7 @@ var Data = {
 // Reads the markdown files in the contents/news folder
 // Adds a record to Data.news so all the templates have access to all the news articles
 // Adds html files to the tmp folder so they can be read by 'write-news'
-gulp.task('read-news', function () {
+gulp.task('read-news', ['clean'], function () {
   Data.news = [];
   return gulp.src('contents/news/**.md')
       // Read markdown files and add data to Data.news
@@ -44,6 +45,7 @@ gulp.task('read-news', function () {
         json = JSON.parse(json);
         json.file = file.path.replace(".md", "")
         json.url = "/news/" + file.relative.replace(".md", ".html")
+        json.formatted_date = moment(new Date(json.date)).format("M/D/YY")
         Data.news.push(json)
 
         // Remove the metadata from top
@@ -65,7 +67,7 @@ gulp.task('read-news', function () {
 
 // First reads the template for News articles
 // Reads the html files for news from the tmp folder and creates the final html file from the Handlebars template
-gulp.task('write-news', ['read-news', 'partials'], function() {
+gulp.task('write-news', ['clean', 'read-news', 'partials'], function() {
   return gulp.src(["contents/news.hbs"])
     .pipe(tap(function(file) {
       var template = Handlebars.compile(file.contents.toString())
@@ -73,7 +75,8 @@ gulp.task('write-news', ['read-news', 'partials'], function() {
       gulp.src(["tmp/news/**.*"])
         .pipe(tap(function(file) {
           var data = {
-            contents: file.contents.toString()
+            contents: file.contents.toString(),
+            news: Data.news
           }
           var html = template(data)
           file.contents = new Buffer(html, "utf-8")
@@ -83,7 +86,7 @@ gulp.task('write-news', ['read-news', 'partials'], function() {
 });
 
 // Create the index file from the Handlebars template
-gulp.task('index', ['partials', 'read-news'], function() {
+gulp.task('index', ['clean', 'partials', 'read-news'], function() {
   return gulp
     .src(["contents/index.hbs"], { base: './contents' })
     .pipe(tap(function(file) {
@@ -107,8 +110,22 @@ gulp.task('partials', ['clean'], function() {
     }))
 });
 
+gulp.task('pages', ['clean', 'partials'], function() {
+  return gulp
+    .src(["contents/pages/**.hbs"], { base: './contents/pages' })
+    .pipe(tap(function(file) {
+      var template = Handlebars.compile(file.contents.toString())
+      var html = template(Data)
+      file.contents = new Buffer(html, "utf-8")
+    }))
+    .pipe(rename(function(path) {
+      path.extname = ".html"
+    }))
+    .pipe(gulp.dest('build'));
+});
+
 gulp.task('watch', function() {
   return gulp.watch(['contents/**/**.*', 'css/**.*'], ['default']);
 })
 
-gulp.task('default', ['clean', 'css', 'write-news', 'index']);
+gulp.task('default', ['clean', 'css', 'write-news', 'index', 'pages']);

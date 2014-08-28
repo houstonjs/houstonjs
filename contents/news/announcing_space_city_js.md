@@ -1,5 +1,6 @@
 {
-  "title": "Announcing SpaceCity JS!"
+  "title": "Announcing SpaceCity JS!",
+  "date": "8-1-2014"
 }
 ---
 

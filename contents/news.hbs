@@ -1,11 +1,30 @@
 <html>
 <head>
-  <link href="css/main.min.css" type="text/css" rel="stylesheet" />
+  <link href='http://fonts.googleapis.com/css?family=Roboto:400,300italic,400italic,500,500italic,700,700italic,900,900italic,300' rel='stylesheet' type='text/css'>
+  <link href="/css/main.min.css" type="text/css" rel="stylesheet" />
 </head>
 <body>
-  <h1>News</h1>
-  {{> header }}
-  {{{ contents }}}
+  {{> navigation }}
+
+  <section class="section">
+    <div class="container">
+      <div class="row">
+        <!-- Blog Post -->
+        <div class="col-md-8 col-sm-8">
+
+          <!-- Post Description -->
+            <div class="post-description">
+              <h2>{{ title }}</h2>
+              {{{ contents }}}
+            </div>
+          <!-- /Post Description -->
+        </div>
+        <div class="col-md-4 col-sm-4">
+          {{> news_sidebar }}
+        </div>
+      </div>
+    </div>
+  </section>
 
 </body>
 </html>

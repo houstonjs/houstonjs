@@ -11,7 +11,7 @@ function logger(req, res, next) {
 }
 
 function errorHandler(err, req, res, next) {
-  console.log("ERROR!");
+  console.log("Error!");
   res.statusCode = 500;
   res.setHeader("Content-Type", "application/json");
   res.end(JSON.stringify(err));
