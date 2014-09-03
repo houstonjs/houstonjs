@@ -50,6 +50,11 @@ gulp.task('move-images', ['clean'], function() {
   return gulp.src('contents/images/**.*').pipe(gulp.dest('build/images'))
 })
 
+// Move CNAME
+gulp.task('move-cname', ['clean'], function() {
+  return gulp.src('contents/CNAME').pipe(gulp.dest('build'))
+})
+
 
 // Reads *.hbs files from contents/partials folder and registers them with Handlebars
 gulp.task('partials', ['clean'], function() {
@@ -79,4 +84,4 @@ gulp.task('watch', function() {
   return gulp.watch(['contents/**/**.*', 'css/**.*'], ['default']);
 })
 
-gulp.task('default', ['clean', 'css', 'index', 'pages', 'move-images']);
+gulp.task('default', ['clean', 'css', 'index', 'pages', 'move-images', 'move-cname']);
