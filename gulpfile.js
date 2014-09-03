@@ -30,63 +30,8 @@ gulp.task('css', ['clean'], function() {
 var Data = {
 };
 
-// Reads the markdown files in the contents/news folder
-// Adds a record to Data.news so all the templates have access to all the news articles
-// Adds html files to the tmp folder so they can be read by 'write-news'
-gulp.task('read-news', ['clean'], function () {
-  Data.news = [];
-  return gulp.src('contents/news/**.md')
-      // Read markdown files and add data to Data.news
-      .pipe(tap(function(file, t) {
-        var contents = file.contents.toString();
-        var index = contents.indexOf("---");
-
-        var json = contents.slice(0,index);
-        json = JSON.parse(json);
-        json.file = file.path.replace(".md", "")
-        json.url = "/news/" + file.relative.replace(".md", ".html")
-        json.formatted_date = moment(new Date(json.date)).format("M/D/YY")
-        Data.news.push(json)
-
-        // Remove the metadata from top
-        var str = contents.slice(index+3, contents.length)
-        file.contents = new Buffer(str, "utf-8")
-      }))
-      // Turn markdown into HTML
-      .pipe(markdown())
-      // Add contents to data after we process markdown into html
-      .pipe(tap(function(file, t) {
-        var news = _.find(Data.news, function(n) {
-          return n.file == file.path.replace(".html", "")
-        })
-        news.contents = file.contents.toString()
-      }))
-      // Move files to tmp folder
-      .pipe(gulp.dest('tmp/news'));
-});
-
-// First reads the template for News articles
-// Reads the html files for news from the tmp folder and creates the final html file from the Handlebars template
-gulp.task('write-news', ['clean', 'read-news', 'partials'], function() {
-  return gulp.src(["contents/news.hbs"])
-    .pipe(tap(function(file) {
-      var template = Handlebars.compile(file.contents.toString())
-
-      gulp.src(["tmp/news/**.*"])
-        .pipe(tap(function(file) {
-          var data = {
-            contents: file.contents.toString(),
-            news: Data.news
-          }
-          var html = template(data)
-          file.contents = new Buffer(html, "utf-8")
-        }))
-        .pipe(gulp.dest('build/news'));
-    }))
-});
-
 // Create the index file from the Handlebars template
-gulp.task('index', ['clean', 'partials', 'read-news'], function() {
+gulp.task('index', ['clean', 'partials'], function() {
   return gulp
     .src(["contents/index.hbs"], { base: './contents' })
     .pipe(tap(function(file) {
@@ -134,4 +79,4 @@ gulp.task('watch', function() {
   return gulp.watch(['contents/**/**.*', 'css/**.*'], ['default']);
 })
 
-gulp.task('default', ['clean', 'css', 'write-news', 'index', 'pages', 'move-images']);
+gulp.task('default', ['clean', 'css', 'index', 'pages', 'move-images']);
